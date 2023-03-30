@@ -320,6 +320,9 @@ func _main(ctx context.Context, buildInfo models.BuildInformation,
 	if err := routingConf.SetOutboundRoutes(allSettings.Firewall.OutboundSubnets); err != nil {
 		return err
 	}
+	if err := routingConf.AddLocalRules(localNetworks); err != nil {
+		return err
+	}
 
 	const tunDevice = "/dev/net/tun"
 	if err := tun.Check(tunDevice); err != nil {

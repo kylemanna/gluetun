@@ -8,6 +8,11 @@ import (
 	"github.com/qdm12/gluetun/internal/netlink"
 )
 
+const (
+	mainTable     = 254
+	localPriority = 98
+)
+
 var (
 	ErrLinkLocalNotFound     = errors.New("local link not found")
 	ErrSubnetDefaultNotFound = errors.New("default subnet not found")
@@ -84,4 +89,15 @@ func (r *Routing) LocalNetworks() (localNetworks []LocalNetwork, err error) {
 	}
 
 	return localNetworks, nil
+}
+
+func (r *Routing) AddLocalRules(subnets []LocalNetwork) (err error) {
+	for _, net := range subnets {
+		// Main table was setup correctly by Docker, just need to add rules to use it
+		err = r.addIPRule(nil, net.IPNet, mainTable, localPriority)
+		if err != nil {
+			return fmt.Errorf("cannot add rule: for subnet %s: %w", net.IPNet, err)
+		}
+	}
+	return nil
 }
